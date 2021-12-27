@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+
+<script src="https://d3js.org/d3.v4.js"></script>
+<body style="background-color: #eeeeee; color: #303841">
+  <a href="index.html" style="color: #303841; text-decoration: none">⌂ Home</a>
+  <h1
+    class="heading"
+    style="text-align: center; font-family: Arial, Helvetica, sans-serif"
+  >
+    Job vacancy rate by broad occupational group
+  </h1>
+  <hr />
+  <div id="my_dataviz" style="padding: 40px 0 10px 50px"></div>
+  <div id="legend"></div>
+  <script>
+    var margin = { top: 10, right: 30, bottom: 30, left: 100 },
+      width = 1300 - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
+
+    var svg = d3
+      .select("#my_dataviz")
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv(
+      "https://raw.githubusercontent.com/thekapilkhandelwal/sauravkukreja.github.io/main/job-vacancy-rate-by-broad-occupational-group.csv",
+      function (data) {
+        var subgroups = d3
+          .map(data, function (d) {
+            return d.occupation1;
+          })
+          .keys();
+        var groups = d3
+          .map(data, function (d) {
+            return d.year;
+          })
+          .keys();
+        var x = d3.scaleBand().domain(groups).range([0, width]).padding([0.2]);
+        svg
+          .append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x).tickSize(0));
+
+        svg
+          .append("text")
+          .attr(
+            "transform",
+            "translate(" + width / 2 + " ," + (height + margin.top + 15) + ")"
+          )
+          .style("text-anchor", "middle")
+          .text("Year");
+
+        var y = d3.scaleLinear().domain([0, 5]).range([height, 0]);
+        svg.append("g").call(d3.axisLeft(y));
+
+        svg
+          .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 0 - margin.left + 20)
+          .attr("x", 0 - height / 2)
+          .attr("dy", "1em")
+          .style("text-anchor", "middle")
+          .text("Job Vacancy Rate");
+
+        var xSubgroup = d3
+          .scaleBand()
+          .domain(subgroups)
+          .range([0, x.bandwidth()])
+          .padding([0.2]);
+
+        var color = d3.scaleOrdinal(["#FF5722", "#00ADB5", "#303841"]);
+
+        svg
+          .append("g")
+          .selectAll("g")
+          .data(data)
+          .enter()
+          .append("g")
+          .attr("transform", function (d) {
+            return "translate(" + x(d.year) + ",0)";
+          })
+          .selectAll("rect")
+          .data(function (d) {
+            return subgroups.map(function (key) {
+              return { key: d.occupation1, value: d.job_vacancy_rate };
+            });
+          })
+          .enter()
+          .append("rect")
+          .attr("x", function (d) {
+            return xSubgroup(d.key);
+          })
+          .attr("y", function (d) {
+            return y(d.value);
+          })
+          .attr("width", xSubgroup.bandwidth())
+          .attr("height", function (d) {
+            return height - y(d.value);
+          })
+          .attr("fill", function (d) {
+            return color(d.key);
+          });
+      }
+    );
+
+    var svg2 = d3.select("#legend").append("svg").attr("width", "500px");
+    svg2
+      .append("circle")
+      .attr("cx", 80)
+      .attr("cy", 40)
+      .attr("r", 6)
+      .style("fill", "#FF5722");
+    svg2
+      .append("circle")
+      .attr("cx", 80)
+      .attr("cy", 60)
+      .attr("r", 6)
+      .style("fill", "#00ADB5");
+    svg2
+      .append("circle")
+      .attr("cx", 80)
+      .attr("cy", 80)
+      .attr("r", 6)
+      .style("fill", "#303841");
+    svg2
+      .append("text")
+      .attr("x", 100)
+      .attr("y", 40)
+      .text("professional, managers, executive and technicians")
+      .style("font-size", "15px")
+      .attr("alignment-baseline", "middle");
+    svg2
+      .append("text")
+      .attr("x", 100)
+      .attr("y", 60)
+      .text("clerical,sales and services workers")
+      .style("font-size", "15px")
+      .attr("alignment-baseline", "middle");
+    svg2
+      .append("text")
+      .attr("x", 100)
+      .attr("y", 80)
+      .text("production and transport operators,cleaners and labourers")
+      .style("font-size", "15px")
+      .attr("alignment-baseline", "middle");
+  </script>
+</body>
